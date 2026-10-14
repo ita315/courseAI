@@ -34,3 +34,24 @@ export function formatDateTime(date: Date): string {
 export function formatDimensions({ width, height }: Dimensions): string {
   return `${width} × ${height}`
 }
+
+const MINUTE = 60_000
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
+
+function plural(count: number, unit: string): string {
+  return `${count} ${unit}${count === 1 ? '' : 's'} ago`
+}
+
+/** How long before `now` the date was → "just now", "5 minutes ago", "yesterday", "2 months ago". */
+export function formatRelativeTime(date: Date, now: Date): string {
+  const elapsed = now.getTime() - date.getTime()
+  if (elapsed < MINUTE) return 'just now'
+  if (elapsed < HOUR) return plural(Math.floor(elapsed / MINUTE), 'minute')
+  if (elapsed < DAY) return plural(Math.floor(elapsed / HOUR), 'hour')
+  const days = Math.floor(elapsed / DAY)
+  if (days === 1) return 'yesterday'
+  if (days < 30) return plural(days, 'day')
+  if (days < 365) return plural(Math.min(Math.floor(days / 30), 11), 'month')
+  return plural(Math.floor(days / 365), 'year')
+}
