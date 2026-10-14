@@ -1,0 +1,164 @@
+/* Layout and component styles. Only use var(--…) from tokens.css here. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.app {
+  display: grid;
+  grid-template-rows: var(--header-height) 1fr;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  height: 100vh;
+}
+
+.header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-l);
+  padding: 0 var(--space-l);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+}
+
+.button {
+  padding: var(--space-s) var(--space-l);
+  border: none;
+  border-radius: var(--radius);
+  font: inherit;
+  color: var(--color-button-text);
+  background: var(--color-button-bg);
+  cursor: pointer;
+}
+
+.error {
+  color: var(--color-error);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.sidebar {
+  overflow: auto;
+  padding: var(--space-m);
+  background: var(--color-sidebar-bg);
+  border-right: var(--border-width) solid var(--color-border);
+}
+
+.main {
+  overflow: auto;
+  padding: var(--space-xl);
+}
+
+/* Tree */
+.tree,
+.tree ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree ul {
+  padding-left: var(--tree-indent);
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  width: 100%;
+  padding: var(--space-xs) var(--space-s);
+  border: none;
+  border-radius: var(--radius);
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.tree-row:hover {
+  background: var(--color-hover);
+}
+
+.tree-row.selected {
+  color: var(--color-selected-text);
+  background: var(--color-selected-bg);
+}
+
+.twisty {
+  flex: none;
+  width: var(--twisty-width);
+  font-size: var(--font-size-small);
+  color: var(--color-text-muted);
+}
+
+.tree-row.selected .twisty {
+  color: inherit;
+}
+
+.tree-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Detail pane */
+.details h2 {
+  margin: 0 0 var(--space-l);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  word-break: break-all;
+}
+
+.details h3 {
+  margin: var(--space-xl) 0 var(--space-m);
+  font-size: var(--font-size);
+  font-weight: var(--font-weight-bold);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: var(--label-width) 1fr;
+  gap: var(--space-s) var(--space-l);
+  margin: 0;
+}
+
+.fields dt {
+  color: var(--color-text-muted);
+}
+
+.fields dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.preview {
+  display: block;
+  max-width: 100%;
+  max-height: var(--preview-max-height);
+  margin-top: var(--space-xl);
+  border-radius: var(--radius);
+  background: var(--color-preview-bg);
+}
+
+.tree-title {
+  margin: 0 0 var(--space-m);
+  padding: 0 var(--space-s);
+  font-size: var(--font-size);
+  font-weight: var(--font-weight-bold);
+}
