@@ -7,10 +7,8 @@
 - Never add a new dependency without asking first, because every library grows the project.
 
 # Conventions
-- Every new function in src/lib/ gets a test.
 - Detect file types by extension, not by the type the browser reports
   (browsers label .ts files as video).
-- Time-dependent functions take "now" as a parameter, so tests stay stable.
 - Bugs unrelated to the task: list them in the summary, don't fix them.
 
 # Stack & architecture
