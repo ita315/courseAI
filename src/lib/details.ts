@@ -15,6 +15,28 @@ export function isImage(file: File): boolean {
   return file.type.startsWith('image/')
 }
 
+/** Extensions we treat as plain text, so we can count their lines. */
+const TEXT_EXTENSIONS = new Set([
+  'txt', 'html', 'htm', 'css', 'js', 'ts', 'py', 'json', 'xml', 'yaml', 'yml', 'csv',
+  'md', 'log', 'ini', 'cfg', 'conf', 'env', 'sql', 'sh', 'bat',
+])
+
+/**
+ * Checks the extension, not the MIME type: browsers report .ts as video/mp2t
+ * and leave many of these (.env, .yml, .conf…) with no type at all.
+ */
+export function isTextFile(name: string): boolean {
+  const dot = name.lastIndexOf('.')
+  return dot !== -1 && TEXT_EXTENSIONS.has(name.slice(dot + 1).toLowerCase())
+}
+
+/** "" → 0, "a" → 1, "a\nb\n" → 2: a trailing newline doesn't start a new line. */
+export function countLines(text: string): number {
+  if (text === '') return 0
+  const newlines = text.split('\n').length - 1
+  return text.endsWith('\n') ? newlines : newlines + 1
+}
+
 /** Returns null if the browser can't decode the image. */
 export async function getImageDimensions(file: File): Promise<Dimensions | null> {
   try {

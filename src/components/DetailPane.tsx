@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getExif, getFileDetails, getImageDimensions, isImage } from '../lib/details'
+import { countLines, getExif, getFileDetails, getImageDimensions, isImage, isTextFile } from '../lib/details'
 import { formatBytes, formatDate, formatDimensions, formatRelativeTime } from '../lib/format'
 import type { Dimensions, ExifEntry, FileDetails } from '../lib/types'
 
@@ -7,6 +7,8 @@ type Loaded = {
   details: FileDetails
   /** When the file was read, so the relative time is measured from that moment. */
   loadedAt: Date
+  /** Null for files that aren't text. */
+  lines: number | null
   image: { dimensions: Dimensions | null; exif: ExifEntry[]; previewUrl: string } | null
 }
 
@@ -28,7 +30,8 @@ export function DetailPane({ handle }: { handle: FileSystemFileHandle }) {
         previewUrl = URL.createObjectURL(file)
         image = { dimensions, exif, previewUrl }
       }
-      if (!cancelled) setLoaded({ details: getFileDetails(file), loadedAt: new Date(), image })
+      const lines = isTextFile(file.name) ? countLines(await file.text()) : null
+      if (!cancelled) setLoaded({ details: getFileDetails(file), loadedAt: new Date(), lines, image })
     }
 
     load().catch((e: unknown) => !cancelled && setError(String(e)))
@@ -41,7 +44,7 @@ export function DetailPane({ handle }: { handle: FileSystemFileHandle }) {
   if (error) return <p className="error">{error}</p>
   if (!loaded) return <p className="muted">Loading…</p>
 
-  const { details, loadedAt, image } = loaded
+  const { details, loadedAt, lines, image } = loaded
   return (
     <section className="details">
       <h2>{details.name}</h2>
@@ -53,6 +56,7 @@ export function DetailPane({ handle }: { handle: FileSystemFileHandle }) {
           label="Modified"
           value={`${formatDate(details.modified)} · ${formatRelativeTime(details.modified, loadedAt)}`}
         />
+        {lines !== null && <Field label="Lines" value={String(lines)} />}
         {image && (
           <Field label="Dimensions" value={image.dimensions ? formatDimensions(image.dimensions) : 'Unknown'} />
         )}

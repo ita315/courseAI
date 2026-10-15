@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatExposure, getFileDetails, isImage, pickExifEntries } from './details'
+import { countLines, formatExposure, getFileDetails, isImage, isTextFile, pickExifEntries } from './details'
 
 describe('getFileDetails', () => {
   it('reads name, size, type and modified date', () => {
@@ -21,6 +21,46 @@ describe('isImage', () => {
   it('checks the MIME type', () => {
     expect(isImage(new File([], 'a.png', { type: 'image/png' }))).toBe(true)
     expect(isImage(new File([], 'a.txt', { type: 'text/plain' }))).toBe(false)
+  })
+})
+
+describe('isTextFile', () => {
+  it('recognises text extensions, ignoring case', () => {
+    for (const name of ['notes.txt', 'index.HTML', 'app.ts', 'config.yml', '.env', 'prod.env', 'run.bat']) {
+      expect(isTextFile(name), name).toBe(true)
+    }
+  })
+
+  it('rejects images, other files and names with no extension', () => {
+    for (const name of ['beach.jpg', 'photo.png', 'archive.zip', 'Makefile', 'txt']) {
+      expect(isTextFile(name), name).toBe(false)
+    }
+  })
+})
+
+describe('countLines', () => {
+  it('counts an empty file as 0 lines', () => {
+    expect(countLines('')).toBe(0)
+  })
+
+  it('counts text without a newline as 1 line', () => {
+    expect(countLines('שלום')).toBe(1)
+  })
+
+  it('counts lines separated by newlines', () => {
+    expect(countLines('א\nב\nג')).toBe(3)
+  })
+
+  it('does not count a trailing newline as an extra line', () => {
+    expect(countLines('א\nב\nג\n')).toBe(3)
+  })
+
+  it('handles Windows line endings', () => {
+    expect(countLines('a\r\nb\r\n')).toBe(2)
+  })
+
+  it('counts empty lines in the middle', () => {
+    expect(countLines('a\n\nb')).toBe(3)
   })
 })
 
