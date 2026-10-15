@@ -30,6 +30,16 @@ export function isTextFile(name: string): boolean {
   return dot !== -1 && TEXT_EXTENSIONS.has(name.slice(dot + 1).toLowerCase())
 }
 
+/**
+ * "beach.jpg" → ".jpg", "archive.tar.gz" → ".gz". Null when there is none:
+ * "Makefile", "file." and dotfiles like ".gitignore" (the dot starts the name).
+ */
+export function getExtension(name: string): string | null {
+  const dot = name.lastIndexOf('.')
+  if (dot <= 0 || dot === name.length - 1) return null
+  return name.slice(dot)
+}
+
 /** "" → 0, "a" → 1, "a\nb\n" → 2: a trailing newline doesn't start a new line. */
 export function countLines(text: string): number {
   if (text === '') return 0

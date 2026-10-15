@@ -3,6 +3,7 @@ import {
   LARGE_FILE_BYTES,
   countLines,
   formatExposure,
+  getExtension,
   getFileDetails,
   isImage,
   isLargeFile,
@@ -43,6 +44,21 @@ describe('isTextFile', () => {
   it('rejects images, other files and names with no extension', () => {
     for (const name of ['beach.jpg', 'photo.png', 'archive.zip', 'Makefile', 'txt']) {
       expect(isTextFile(name), name).toBe(false)
+    }
+  })
+})
+
+describe('getExtension', () => {
+  it('returns the last extension with its dot, keeping the case', () => {
+    expect(getExtension('beach.jpg')).toBe('.jpg')
+    expect(getExtension('PHOTO.JPG')).toBe('.JPG')
+    expect(getExtension('archive.tar.gz')).toBe('.gz')
+    expect(getExtension('.config.json')).toBe('.json')
+  })
+
+  it('returns null when there is no extension', () => {
+    for (const name of ['Makefile', 'file.', '.gitignore', '']) {
+      expect(getExtension(name), name).toBeNull()
     }
   })
 })

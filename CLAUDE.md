@@ -1,9 +1,6 @@
 # Forbidden
-- No React imports in src/lib/, because the logic must be testable without a browser.
 - No network calls, no localStorage or IndexedDB, and no writes to disk,
   because the app only reads a folder and never stores anything.
-- No hard-coded colors, sizes or fonts. Use only CSS variables from
-  src/styles/tokens.css, because the design must change in one place.
 - Never add a new dependency without asking first, because every library grows the project.
 
 # Conventions

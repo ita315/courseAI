@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { countLines, getExif, getFileDetails, getImageDimensions, isImage, isTextFile } from '../lib/details'
+import { countLines, getExif, getExtension, getFileDetails, getImageDimensions, isImage, isTextFile } from '../lib/details'
 import { formatBytes, formatDate, formatDimensions, formatRelativeTime } from '../lib/format'
 import type { Dimensions, ExifEntry, FileDetails } from '../lib/types'
 
@@ -50,6 +50,7 @@ export function DetailPane({ handle }: { handle: FileSystemFileHandle }) {
       <h2>{details.name}</h2>
       <dl className="fields">
         <Field label="Name" value={details.name} />
+        <Field label="Extension" value={getExtension(details.name) ?? 'None'} />
         <Field label="Size" value={formatBytes(details.size)} />
         <Field label="Type" value={details.type} />
         <Field
