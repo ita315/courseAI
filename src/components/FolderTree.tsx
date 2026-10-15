@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { memo, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { isLargeFile } from '../lib/details'
-import { listDirectory } from '../lib/tree'
-import type { TreeNode } from '../lib/types'
+import { filterTree, listDirectory, loadTree } from '../lib/tree'
+import type { LoadedTreeNode, TreeNode } from '../lib/types'
 
 type FileNode = TreeNode & { kind: 'file' }
 
@@ -16,6 +16,14 @@ export function FolderTree({ root, selectedPath, onSelectFile }: Props) {
   const [children, setChildren] = useState<TreeNode[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const [query, setQuery] = useState('')
+  // The input updates on every key; the filtered list catches up when React has time.
+  const deferredQuery = useDeferredValue(query)
+  // Every sub-folder, loaded once the first time the user types.
+  const [fullTree, setFullTree] = useState<LoadedTreeNode[] | null>(null)
+  const [searchStarted, setSearchStarted] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
+
   useEffect(() => {
     let cancelled = false
     listDirectory(root, root.name)
@@ -26,20 +34,83 @@ export function FolderTree({ root, selectedPath, onSelectFile }: Props) {
     }
   }, [root])
 
+  useEffect(() => {
+    if (!searchStarted) return
+    let cancelled = false
+    loadTree(root, root.name)
+      .then((nodes) => !cancelled && setFullTree(nodes))
+      .catch((e: unknown) => !cancelled && setSearchError(String(e)))
+    return () => {
+      cancelled = true
+    }
+  }, [root, searchStarted])
+
+  const filtering = deferredQuery.trim() !== ''
+  const matches = useMemo(() => fullTree && filterTree(fullTree, deferredQuery), [fullTree, deferredQuery])
+
+  function changeQuery(value: string) {
+    setQuery(value)
+    if (value.trim() !== '') setSearchStarted(true)
+  }
+
   if (error) return <p className="error">{error}</p>
   if (!children) return <p className="muted">Loading…</p>
 
   return (
     <>
       <h2 className="tree-title">📁 {root.name}</h2>
-      <NodeList nodes={children} selectedPath={selectedPath} onSelectFile={onSelectFile} />
+      <input
+        type="search"
+        className="filter"
+        placeholder="Filter files…"
+        aria-label="Filter files"
+        value={query}
+        onChange={(e) => changeQuery(e.target.value)}
+      />
+      {filtering &&
+        (searchError ? (
+          <p className="error">{searchError}</p>
+        ) : !matches ? (
+          <p className="muted">Loading all folders…</p>
+        ) : matches.length === 0 ? (
+          <p className="muted">No matching files</p>
+        ) : (
+          <FilteredList nodes={matches} selectedPath={selectedPath} onSelectFile={onSelectFile} />
+        ))}
+      {/* Kept mounted while filtering, so opened folders stay open after the box is cleared. */}
+      <div hidden={filtering}>
+        <NodeList nodes={children} selectedPath={selectedPath} onSelectFile={onSelectFile} />
+      </div>
     </>
   )
 }
 
+type FilteredProps = Omit<Props, 'root'> & { nodes: LoadedTreeNode[]; nested?: boolean }
+
+/** The filter results: every folder shown open, so it's clear where each file lives. */
+const FilteredList = memo(function FilteredList({ nodes, nested = false, selectedPath, onSelectFile }: FilteredProps) {
+  return (
+    <ul className={nested ? undefined : 'tree'}>
+      {nodes.map((node) =>
+        node.kind === 'directory' ? (
+          <li key={node.path}>
+            <div className="tree-row">
+              <span className="twisty">▾</span>
+              <span className="tree-name">📁 {node.name}</span>
+            </div>
+            <FilteredList nodes={node.children} nested selectedPath={selectedPath} onSelectFile={onSelectFile} />
+          </li>
+        ) : (
+          <FileItem key={node.path} node={node} selectedPath={selectedPath} onSelectFile={onSelectFile} />
+        ),
+      )}
+    </ul>
+  )
+})
+
 type ListProps = Omit<Props, 'root'> & { nodes: TreeNode[]; nested?: boolean }
 
-function NodeList({ nodes, nested = false, selectedPath, onSelectFile }: ListProps) {
+const NodeList = memo(function NodeList({ nodes, nested = false, selectedPath, onSelectFile }: ListProps) {
   return (
     <ul className={nested ? undefined : 'tree'}>
       {nodes.length === 0 && <li className="tree-row muted">Empty folder</li>}
@@ -52,7 +123,7 @@ function NodeList({ nodes, nested = false, selectedPath, onSelectFile }: ListPro
       )}
     </ul>
   )
-}
+})
 
 type FileProps = Omit<Props, 'root'> & { node: FileNode }
 

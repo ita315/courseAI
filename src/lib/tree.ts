@@ -1,4 +1,4 @@
-import type { TreeNode } from './types'
+import type { LoadedTreeNode, TreeNode } from './types'
 
 /** The part of a directory handle we use, so tests can pass a fake one. */
 export type DirectoryLike = {
@@ -45,4 +45,37 @@ export async function listDirectory(dir: DirectoryLike, parentPath: string): Pro
     )
   }
   return sortEntries(nodes)
+}
+
+/** Lists a folder and all its sub-folders (recursive), for searching folders not opened yet. */
+export async function loadTree(dir: DirectoryLike, parentPath: string): Promise<LoadedTreeNode[]> {
+  const nodes = await listDirectory(dir, parentPath)
+  return Promise.all(
+    nodes.map(async (node): Promise<LoadedTreeNode> =>
+      node.kind === 'directory' ? { ...node, children: await loadTree(node.handle, node.path) } : node,
+    ),
+  )
+}
+
+/**
+ * Keeps only files whose name contains the query (ignoring case), plus the folders above them.
+ * An empty query returns the tree unchanged.
+ */
+export function filterTree(nodes: LoadedTreeNode[], query: string): LoadedTreeNode[] {
+  const q = query.trim().toLowerCase()
+  if (q === '') return nodes
+  return filterNodes(nodes, q)
+}
+
+function filterNodes(nodes: LoadedTreeNode[], q: string): LoadedTreeNode[] {
+  const result: LoadedTreeNode[] = []
+  for (const node of nodes) {
+    if (node.kind === 'file') {
+      if (node.name.toLowerCase().includes(q)) result.push(node)
+    } else {
+      const children = filterNodes(node.children, q)
+      if (children.length > 0) result.push({ ...node, children })
+    }
+  }
+  return result
 }
