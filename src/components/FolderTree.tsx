@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { isLargeFile } from '../lib/details'
 import { listDirectory } from '../lib/tree'
 import type { TreeNode } from '../lib/types'
 
@@ -46,18 +47,41 @@ function NodeList({ nodes, nested = false, selectedPath, onSelectFile }: ListPro
         node.kind === 'directory' ? (
           <FolderItem key={node.path} node={node} selectedPath={selectedPath} onSelectFile={onSelectFile} />
         ) : (
-          <li key={node.path}>
-            <button
-              className={`tree-row${node.path === selectedPath ? ' selected' : ''}`}
-              onClick={() => onSelectFile(node)}
-            >
-              <span className="twisty" />
-              <span className="tree-name">📄 {node.name}</span>
-            </button>
-          </li>
+          <FileItem key={node.path} node={node} selectedPath={selectedPath} onSelectFile={onSelectFile} />
         ),
       )}
     </ul>
+  )
+}
+
+type FileProps = Omit<Props, 'root'> & { node: FileNode }
+
+function FileItem({ node, selectedPath, onSelectFile }: FileProps) {
+  // Reading the size only touches metadata, not the file contents.
+  const [large, setLarge] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    node.handle
+      .getFile()
+      .then((file) => !cancelled && setLarge(isLargeFile(file.size)))
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [node.handle])
+
+  return (
+    <li>
+      <button
+        className={`tree-row${node.path === selectedPath ? ' selected' : ''}`}
+        onClick={() => onSelectFile(node)}
+      >
+        <span className="twisty" />
+        <span className="tree-name">📄 {node.name}</span>
+        {large && <span className="badge">Large</span>}
+      </button>
+    </li>
   )
 }
 

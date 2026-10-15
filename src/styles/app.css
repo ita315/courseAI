@@ -117,6 +117,17 @@ body {
   text-overflow: ellipsis;
 }
 
+.badge {
+  flex: none;
+  margin-left: auto;
+  padding: 0 var(--space-s);
+  border-radius: var(--radius);
+  font-size: var(--font-size-badge);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-badge-text);
+  background: var(--color-badge-bg);
+}
+
 /* Detail pane */
 .details h2 {
   margin: 0 0 var(--space-l);

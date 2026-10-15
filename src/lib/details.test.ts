@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { countLines, formatExposure, getFileDetails, isImage, isTextFile, pickExifEntries } from './details'
+import {
+  LARGE_FILE_BYTES,
+  countLines,
+  formatExposure,
+  getFileDetails,
+  isImage,
+  isLargeFile,
+  isTextFile,
+  pickExifEntries,
+} from './details'
 
 describe('getFileDetails', () => {
   it('reads name, size, type and modified date', () => {
@@ -82,5 +91,22 @@ describe('pickExifEntries', () => {
 
   it('returns [] when there is no EXIF', () => {
     expect(pickExifEntries(undefined)).toEqual([])
+  })
+})
+
+describe('isLargeFile', () => {
+  it('uses 10 × 1024 × 1024 bytes as the limit', () => {
+    expect(LARGE_FILE_BYTES).toBe(10_485_760)
+  })
+
+  it('is false up to and including exactly 10 MB', () => {
+    expect(isLargeFile(0)).toBe(false)
+    expect(isLargeFile(10_000_000)).toBe(false)
+    expect(isLargeFile(LARGE_FILE_BYTES)).toBe(false)
+  })
+
+  it('is true above 10 MB', () => {
+    expect(isLargeFile(LARGE_FILE_BYTES + 1)).toBe(true)
+    expect(isLargeFile(3_000_000_000)).toBe(true)
   })
 })

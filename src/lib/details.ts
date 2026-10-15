@@ -85,3 +85,11 @@ export async function getExif(file: File): Promise<ExifEntry[]> {
     return []
   }
 }
+
+/** 10 MB in binary units (10 × 1024 × 1024 bytes). */
+export const LARGE_FILE_BYTES = 10 * 1024 * 1024
+
+/** Large files open slowly and take up disk space, so the tree flags them. */
+export function isLargeFile(size: number): boolean {
+  return size > LARGE_FILE_BYTES
+}

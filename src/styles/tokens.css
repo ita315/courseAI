@@ -5,6 +5,7 @@
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-size: 13px;
   --font-size-small: 12px;
+  --font-size-badge: 10px;
   --font-size-title: 15px;
   --font-weight-bold: 600;
   --line-height: 1.5;
@@ -21,6 +22,8 @@
   --color-button-text: #ffffff;
   --color-error: #c4281c;
   --color-preview-bg: #e8e8ed;
+  --color-badge-bg: #fff4e0;
+  --color-badge-text: #9a5b00;
 
   --space-xs: 2px;
   --space-s: 4px;
@@ -49,5 +52,7 @@
     --color-selected-bg: #0a63d8;
     --color-error: #ff6961;
     --color-preview-bg: #2c2c2e;
+    --color-badge-bg: #4a3410;
+    --color-badge-text: #ffcc80;
   }
 }
